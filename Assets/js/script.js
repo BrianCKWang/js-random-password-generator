@@ -131,7 +131,7 @@ var getPasswordOptions = function(){
   return passwordOptions;
 }
 
-//check at least one chategory is chosen
+//check that at least one chategory is chosen
 var isValidOption = function(passwordOptions){
   var isValid = false;
 
@@ -146,91 +146,112 @@ var isValidOption = function(passwordOptions){
 }
 
 var generateRandomNumberBetween = function(lower, upper){
-  var value = 0;
-  value = Math.random();
-  value *= (upper-lower);
-  value = Math.floor(value);
-
-  return value;
+  return (Math.random()*(upper-lower) << 0) + lower ;
 }
 
-var generatePasswordWithOption_method1 = function(passwordOptions){
-  
-  var password = "";
-  var allCharacters = [];
-  //concatenate all available characters into one array
-  for(var i = 0; i < 5; i++){
-    if(passwordOptions.hasLowerCase){
-      allCharacters = allCharacters.concat(lowerCasedCharacters);
-    }
-    if(passwordOptions.hasUpperCase){
-      allCharacters = allCharacters.concat(upperCasedCharacters);
-    }
-    if(passwordOptions.hasNumeric){
-      allCharacters = allCharacters.concat(numericCharacters);
-    }
-    if(passwordOptions.hasSpecialChar){
-      allCharacters = allCharacters.concat(specialCharacters);
-    }
-  }
+// Fisher–Yates shuffle
+String.prototype.shuffle = function () {
+  var a = this.split(""),
+      n = a.length;
 
-  debugger;
-  for(var i = 0; i < passwordOptions.length; i++){
-    //generate a random number within array range
-    //join characters
-    var index = generateRandomNumberBetween(0,allCharacters.length);
-    password = password + allCharacters[index];
+  for(var i = n - 1; i > 0; i--) {
+      var j = Math.random() * (i + 1) << 0;
+      var tmp = a[i];
+      a[i] = a[j];
+      a[j] = tmp;
   }
-
-  return password;
+  return a.join("");
 }
 
-var generatePasswordWithOption_method2 = function(passwordOptions){
+var generatePasswordWithOption = function(passwordOptions){
   
   var password = "";
-  var allCharacters = [];
-  //concatenate all available characters into one array
-  for(var i = 0; i < 5; i++){
-    if(passwordOptions.hasLowerCase){
-      allCharacters = allCharacters.concat(0);
-    }
-    if(passwordOptions.hasUpperCase){
-      allCharacters = allCharacters.concat(1);
-    }
-    if(passwordOptions.hasNumeric){
-      allCharacters = allCharacters.concat(2);
-    }
-    if(passwordOptions.hasSpecialChar){
-      allCharacters = allCharacters.concat(3);
-    }
-  }
+  var typeIsUsed = {
+    0: false,
+    1: false,
+    2: false,
+    3: false,
+    reset: function(){
+      if(passwordOptions.hasLowerCase){
+        this[0] = true;
+      }
+      if(passwordOptions.hasUpperCase){
+        this[1] = true;
+      }
+      if(passwordOptions.hasNumeric){
+        this[2] = true;
+      }
+      if(passwordOptions.hasSpecialChar){
+        this[3] = true;
+      }
+    },
 
-  debugger;
+    allUsed: function(){
+      if(this[0] == false &&
+        this[1] == false &&
+        this[2] == false &&
+        this[3] == false){
+          return true;
+        }
+        else{
+          return false;
+        }
+    }
+  };
+  
+  // pick a random key from available types
+  var randomKey = function (obj) {
+    var keys = Object.keys(obj);
+
+    keys = keys.slice(0,4);
+    for(var i = keys.length - 1; i >= 0; i--){
+      if(obj[i] == false){
+        keys.splice(i,1);
+      }
+    }
+
+    return keys[keys.length * Math.random() << 0];
+  };
+
+  typeIsUsed.reset();
+  
   for(var i = 0; i < passwordOptions.length; i++){
-    //generate a random number within array range
-    //join characters
-
-    var index = allCharacters[generateRandomNumberBetween(0,allCharacters.length)];
+    //choose a random character type
+    var index = randomKey(typeIsUsed);
+    
+    //then choose a random character from the chosen random type
     switch(index){
-      case 0:
-        var charToAdd = lowerCasedCharacters[generateRandomNumberBetween(0,lowerCasedCharacters.length)];
+      case "0":
+        var typeToChoose = lowerCasedCharacters;
         break;
-      case 1:
-        var charToAdd = upperCasedCharacters[generateRandomNumberBetween(0,upperCasedCharacters.length)];
+      case "1":
+        var typeToChoose = upperCasedCharacters;
         break;
-      case 2:
-        var charToAdd = numericCharacters[generateRandomNumberBetween(0,numericCharacters.length)];
+      case "2":
+        var typeToChoose = numericCharacters;
         break;
-      case 3:
-        var charToAdd = specialCharacters[generateRandomNumberBetween(0,specialCharacters.length)];
+      case "3":
+        var typeToChoose = specialCharacters;
         break;
       default:
         break;
     }
     
-    password = password + charToAdd;
+    //mark the used type to skip
+    typeIsUsed[index] = false;
+    
+    //reset the types when all are used
+    if(typeIsUsed.allUsed()){
+      typeIsUsed.reset();
+    }
+
+    //concat the new character
+    password = password + typeToChoose[generateRandomNumberBetween(0,typeToChoose.length)];
   }
 
+  //shuffle the characters to increase randomness
+  password = password.shuffle();
+  
   return password;
 }
 
@@ -240,7 +261,7 @@ var generatePassword = function(){
  
   if(isValidOption(passwordOptions)){
     //use password options to generate password
-    password = generatePasswordWithOption_method2(passwordOptions);
+    password = generatePasswordWithOption(passwordOptions);
   }
   else{
     window.alert("Must include at least one type of character!");
