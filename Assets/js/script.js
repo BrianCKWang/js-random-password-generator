@@ -110,6 +110,7 @@ var getPasswordOptions = function(){
     }
   }while(passWordLength < 8 || passWordLength > 128 || isNaN(passWordLength) === true);
   
+  passwordOptions.length = passWordLength;
   //prompt lowercase
   passwordOptions.hasLowerCase = confirm(
     'Click OK to confirm including lowercase characters.'
@@ -144,13 +145,102 @@ var isValidOption = function(passwordOptions){
   return isValid;
 }
 
+var generateRandomNumberBetween = function(lower, upper){
+  var value = 0;
+  value = Math.random();
+  value *= (upper-lower);
+  value = Math.floor(value);
+
+  return value;
+}
+
+var generatePasswordWithOption_method1 = function(passwordOptions){
+  
+  var password = "";
+  var allCharacters = [];
+  //concatenate all available characters into one array
+  for(var i = 0; i < 5; i++){
+    if(passwordOptions.hasLowerCase){
+      allCharacters = allCharacters.concat(lowerCasedCharacters);
+    }
+    if(passwordOptions.hasUpperCase){
+      allCharacters = allCharacters.concat(upperCasedCharacters);
+    }
+    if(passwordOptions.hasNumeric){
+      allCharacters = allCharacters.concat(numericCharacters);
+    }
+    if(passwordOptions.hasSpecialChar){
+      allCharacters = allCharacters.concat(specialCharacters);
+    }
+  }
+
+  debugger;
+  for(var i = 0; i < passwordOptions.length; i++){
+    //generate a random number within array range
+    //join characters
+    var index = generateRandomNumberBetween(0,allCharacters.length);
+    password = password + allCharacters[index];
+  }
+
+  return password;
+}
+
+var generatePasswordWithOption_method2 = function(passwordOptions){
+  
+  var password = "";
+  var allCharacters = [];
+  //concatenate all available characters into one array
+  for(var i = 0; i < 5; i++){
+    if(passwordOptions.hasLowerCase){
+      allCharacters = allCharacters.concat(0);
+    }
+    if(passwordOptions.hasUpperCase){
+      allCharacters = allCharacters.concat(1);
+    }
+    if(passwordOptions.hasNumeric){
+      allCharacters = allCharacters.concat(2);
+    }
+    if(passwordOptions.hasSpecialChar){
+      allCharacters = allCharacters.concat(3);
+    }
+  }
+
+  debugger;
+  for(var i = 0; i < passwordOptions.length; i++){
+    //generate a random number within array range
+    //join characters
+
+    var index = allCharacters[generateRandomNumberBetween(0,allCharacters.length)];
+    switch(index){
+      case 0:
+        var charToAdd = lowerCasedCharacters[generateRandomNumberBetween(0,lowerCasedCharacters.length)];
+        break;
+      case 1:
+        var charToAdd = upperCasedCharacters[generateRandomNumberBetween(0,upperCasedCharacters.length)];
+        break;
+      case 2:
+        var charToAdd = numericCharacters[generateRandomNumberBetween(0,numericCharacters.length)];
+        break;
+      case 3:
+        var charToAdd = specialCharacters[generateRandomNumberBetween(0,specialCharacters.length)];
+        break;
+      default:
+        break;
+    }
+    
+    password = password + charToAdd;
+  }
+
+  return password;
+}
+
 var generatePassword = function(){
   var password = "";
   var passwordOptions = getPasswordOptions();
  
   if(isValidOption(passwordOptions)){
-    //use password options generate password
-
+    //use password options to generate password
+    password = generatePasswordWithOption_method2(passwordOptions);
   }
   else{
     window.alert("Must include at least one type of character!");
